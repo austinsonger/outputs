@@ -156,7 +156,8 @@ def ladder(in_files, out_json, budget_s):
         print(f"k={kk}: {len(Fs)} cells settled, sup F = {max(Fs):.6f}")
     json.dump(dict(best=best,
                    summary={str(kk): dict(cells=len(v), supF=max(v))
-                            for kk, v in by_k.items()}),
+                            for kk, v in by_k.items()},
+                   cells=list(cells.values())),
               open(out_json, "w"))
     print(f"wrote {out_json}; global best F = {best['F']:.6f}")
 

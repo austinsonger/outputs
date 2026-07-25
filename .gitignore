@@ -12,3 +12,5 @@ __pycache__/dual_cert.cpython-314.pyc
 __pycache__/cert_analyze.cpython-314.pyc
 __pycache__/cert_synth.cpython-314.pyc
 .venv/
+__pycache__/cert_test_higher.cpython-314.pyc
+__pycache__/solve_unbalanced.cpython-314.pyc
