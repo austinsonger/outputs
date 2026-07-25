@@ -137,6 +137,34 @@ A. Partner-match branch deaths (expect fold/pair annihilation, corners convergin
 B. Max-slope-vs-h per seed; count-explosion onset should track slope crossing ~1. Would explain seed-dependent onset.
 C. Adversarial search for Conjecture 6 counterexamples at k=9-13 (constraint solver / annealing). Wagner only did ~500 random (7,7,7) instances in 2016.
 
+---
+
+## Session 2026-07-25 (cont.): experiments B (slope threshold) and C (Conjecture 6 search)
+
+### B: slope-threshold hypothesis FALSIFIED
+Metric: S = max |r'(theta)|/r(theta) per (seed, h). Figure `slope_onset.png`.
+- S at measured onset scatters 10.7-18.5 across seeds (mean 15.5, std 2.8): no common threshold.
+- At fixed h=0.55, S does not separate presence/absence of small squares (seed 3: S=16.1 without; seed 2: S=12.2 with).
+- All curves in the studied range have S >> 1, so Tao's slope-1 boundary cannot be the onset criterion in this family.
+Conclusion: global max steepness is the wrong statistic; small-square formation depends on specific local wiggle configurations. If revisited, use LOCAL statistics (e.g., co-occurrence of steep segments at ~90 deg relative orientation at matched scales), not global maxima. Do not re-test global slope statistics.
+
+### C: adversarial Conjecture 6 search (`conj6_search.py`)
+Validation: axiom-(ii) order patterns per sequence = 2, 8, 42 for k=3,5,7 = the open meandric numbers. Confirms (ii) encodes meander structure; reusable as a correctness check.
+
+Method: annealing over (meander pattern triple, values) with axiom (iii) as penalty; every valid configuration's sign-cell is then settled EXACTLY by LP (within a cell all sgn quantities are constant, so the cell is an open cone and the within-cell supremum of F is a linear program; F > 0 in any cell = genuine counterexample).
+
+Results:
+- k=(5,5,5): multiple distinct cells settled across seeds; best cell supremum F = -7e-4 with margin eps=1e-4, i.e. sup F -> 0^- as margins shrink. NO counterexample; the inequality F < 0 is empirically TIGHT (boundary of validity approaches F = 0 through degenerating configurations). This sharpens Wagner's 2016 random sampling: per-cell suprema are exact, not sampled.
+- k=(7,7,7): random-start annealing reached ZERO (iii)-valid configurations in ~170 restarts even with 3500-step schedules. Axiom (iii) is combinatorially rigid at k=7; local repair from random meander triples fails.
+
+Never repeat: random-start annealing for k >= 7.
+Queued instead (next session): structural generators for valid configs, two candidates:
+  a. Arc inflation: insert a nested adjacent pair (u, u+delta) into a valid k config (meander insertion preserves (ii); delta small keeps all sgn sums, so (iii) survives) -> ladder k=5 -> 7 -> 9.
+  b. Build configs from Tao's curve dictionary directly (three winding-1 curve systems -> y sequences), guaranteeing validity by construction.
+
+### Session file inventory (added today)
+`slope_onset.png`, `conj6_search.py`, `conj6_k5_lp.json` (best settled cell), `state_down.json`, `state_up.json`, `branch_continuation.png`, `tao_2017_notes.md`, `seed_sweep.py`, `seeds.json`, `seed_sweep.png`.
+
 ### Ruled out / never repeat
 - Proving the general conjecture in-session. Not a candidate activity.
 - Naive KD-only acceptance without scale-aware residual bounds (attempt 1-2).
