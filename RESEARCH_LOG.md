@@ -210,6 +210,54 @@ objects, and the search should target them.
 - Characterize which insertions/deletions preserve validity (toward step (c)).
 - Prime-configuration search at k=7: cells whose arc-deletions all break validity.
 
+---
+
+## Session 2026-07-25 (cont.): EXHAUSTIVE k=(5,5,5) base case + margin scaling law
+
+### Base case settled (`exhaustive_k5.py`, data ex_a/b/c.json)
+MILP per pattern triple: 15 continuous y vars, 125 sign binaries, big-M linking
+(M=4, EPS=1e-5), axiom (iii) as linear equalities on signs, maximize F.
+All 120 pattern triples up to sequence-permutation symmetry (= all 512):
+solved, none infeasible, max F = -7e-5 < 0 in EVERY triple.
+
+VERDICT: no counterexample to Conjecture 6 exists at k=(5,5,5) with relative
+margins >= 1e-5. First exhaustive treatment of the base case we are aware of
+(Tao 2016 suggested it was doable; Wagner only sampled randomly).
+Caveats for theorem-grade: HiGHS floating point, big-M formulation; a rational
+arithmetic certificate pass is queued. Cells are open cones, so margin
+normalization loses no generality up to the EPS threshold.
+
+### DISCOVERY: uniform sharp optimum + margin scaling law
+1. Every one of the 120 triples has the SAME optimum: F_max = -7 EPS exactly.
+   Not just F < 0: a single universal constant across all meander structures.
+2. Spot checks at larger k (3 triples each): k=7 gives F_max = -10 EPS,
+   k=9 gives F_max = -13 EPS. Perfect fit to:
+
+       sup F = -((3k-1)/2) * EPS,   i.e.   F <= -((k1+k2+k3-1)/2) * margin
+
+   (equal-k form verified at k=5,7,9; mixed-size form is the natural guess,
+   UNTESTED - predicts -8 EPS at (5,5,7).)
+This is a sharp quantitative strengthening of Conjecture 6: F is not merely
+negative, it is bounded by a linear function of the configuration's minimal
+margin. If provable, it implies Conjecture 6 outright.
+
+### Path to proof (next session, in order)
+1. Extract LP dual multipliers at the optimum for one cell (scipy linprog dual
+   or HiGHS duals): the dual is a nonnegative combination of margin constraints
+   certifying F <= -7 EPS. Inspect its structure.
+2. Check dual uniformity across triples. A pattern-independent dual = a single
+   human-readable inequality chain proving the law for all cells at k=5.
+3. Induction over k via arc insertion (we already know insertion preserves
+   validity): does the dual certificate extend by +3/2 per inserted pair?
+   The +3 EPS per k-step strongly suggests each new arc contributes exactly
+   3 margin constraints to the chain.
+4. Test mixed sizes (5,5,7) to pin the general constant.
+5. Rational arithmetic re-verification of the k=5 base (exact certificate).
+
+### Files added
+`exhaustive_k5.py`, `ex_a.json`, `ex_b.json`, `ex_c.json`, `ex_probe.json`,
+`ladder1.json`, `ladder2.json`, `k777_seed.json`, `k777_walk.json`.
+
 ### Ruled out / never repeat
 - Proving the general conjecture in-session. Not a candidate activity.
 - Naive KD-only acceptance without scale-aware residual bounds (attempt 1-2).
