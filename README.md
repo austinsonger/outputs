@@ -40,6 +40,7 @@ Full experimental history, including every dead end, lives in [RESEARCH_LOG.md](
 | **Margin scaling law.** `sup F = -((k1+k2+k3-1)/2)·EPS`, verified with zero misses at (5,5,5) exhaustive, (7,7,7), (9,9,9) and by blind prediction at (5,5,7) → `-8·EPS` and (5,7,9) → `-10·EPS`. A sharp quantitative strengthening of Conjecture 6 | `ex_*.json`, `dual_cert.py mixed` |
 | **All 120 certificates classified, exact.** Every optimal cell's LP dual has unit multipliers, exactly 7 active constraints, box inactive, and passes the integer identity `objective = Σ active rows` in exact arithmetic. Compositions (n_ord, n_sum): (6,1)×35, (4,3)×57, (2,5)×28 | `cert_class.json`, `dual_cert.py dual` |
 | **Three hand proofs.** Boundary lemmas: axiom (iii) forces the first-elements and last-elements triple sums negative (any odd sizes, any pattern). Theorem: Conjecture 6 holds for identity patterns, ALL odd k, with the sharp constant. Proposition: certificate triple-sum count is odd with negatives outnumbering positives by one | `margin_law_notes.md` |
+| **Aligned-edge restriction.** Every one of the 120 optimal-cell certificates can be chosen using only aligned ordering edges; the same holds for a tested k=(7,7,7) cell. Reduces certificate existence to a finite combinatorial tiling problem | `cert_synth.py aligned_subsets_all`, `cert_aligned.json` |
 
 Prior art for comparison: Wagner checked roughly 500 random `(7,7,7)` instances in 2016, and Tao called `(5,5,5)` "fairly straightforward" numerically. This repo settles `(5,5,5)` exhaustively and reaches k = 23 with exact cell suprema via arc inflation.
 
@@ -108,6 +109,8 @@ python3 -u conj6_search.py patterns 7
 ├── inflate.py               # Conjecture 6: arc-inflation ladder + neighbor-cell walk
 ├── exhaustive_k5.py         # Conjecture 6: exhaustive k=(5,5,5) base case via MILP
 ├── dual_cert.py             # Mixed-size MILP + LP dual certificate extraction
+├── cert_analyze.py          # Human-readable anatomy of dual certificates
+├── cert_synth.py            # Synthetic certificate construction tests
 │
 ├── squares_gallery.png      # 4-curve gallery with found squares
 ├── roughness_sweep.png      # Sweep panels + degeneration plot
@@ -123,7 +126,9 @@ python3 -u conj6_search.py patterns 7
 ├── ladder1.json ladder2.json  # Arc-inflation ladders (unbalanced to k=107, balanced to k=23)
 ├── k777_seed.json k777_walk.json  # (7,7,7) seed config + neighbor-cell walk
 ├── ex_a.json ex_b.json ex_c.json ex_probe.json  # Exhaustive k=(5,5,5) MILP results (all 120 triples)
-└── cert_class.json          # Certificate classification for all 120 optimal cells
+├── cert_class.json          # Certificate classification for all 120 optimal cells
+├── cert_aligned.json        # Aligned-edge-only synthetic certificates (all 120 records)
+└── cert_details.txt         # Human-readable certificate anatomy
 ```
 
 Every script is a plain CLI with `mode` as `argv[1]`. There is no package, no build step, and no config file. Run scripts from the repo root, since `seed_sweep.py`, `continuation.py`, and `inflate.py` import from their siblings.
@@ -246,6 +251,26 @@ Larger `k` spot checks: set `exhaustive_k5.K = 7` (or 9) after import and pass p
 | `python3 -u dual_cert.py dual IDX` | Rebuild the optimal cell of exhaustive record `IDX`, solve the within-cell LP, print the dual certificate: active constraints, multipliers, box activity. |
 
 The classification over all 120 records (loop over `dual IDX`, collected in `cert_class.json`): 120/120 unit multipliers, 120/120 exactly 7 active constraints, 0/120 box active, 120/120 pass the exact integer identity `objective vector = Σ active constraint rows`. The final verification step involves no floating point.
+
+### cert_analyze.py
+
+| Command | Description |
+|---|---|
+| `python3 -u cert_analyze.py detail IDX` | Print a human-readable breakdown of record `IDX`'s certificate: patterns, rank order, active ordering edges, residual positions, and triple sums. |
+| `python3 -u cert_analyze.py all [OUT.txt]` | Write the same breakdown for all 120 records. |
+| `python3 -u cert_analyze.py summary` | Print a compact table of compositions and residual runs. |
+
+### cert_synth.py
+
+Tests synthetic certificate constructions for the k=(5,5,5) base case.
+
+| Command | Description |
+|---|---|
+| `python3 -u cert_synth.py min_all` | Recompute a minimal unit-certificate for every record (confirms 120/120 feasible). |
+| `python3 -u cert_synth.py aligned_subsets_all` | Restrict to **aligned** ordering edges only; confirms a valid certificate exists for every record. |
+| `python3 -u cert_synth.py export cert_aligned.json` | Write the aligned-edge-only certificates for all 120 records. |
+
+Key finding: every optimal-cell certificate can be chosen using only aligned ordering edges (lower-rank even position → higher-rank odd position). The identity-pattern theorem is the case where all aligned edges are used.
 
 ## How the square finder works
 
@@ -516,7 +541,7 @@ Geometry track:
 
 Combinatorics track (higher value), in attack order:
 
-3. **The certificate-existence lemma** (the single remaining gap at k = 5): prove every valid cell admits a unit-coefficient decomposition of `F` into `(Σk-1)/2` negative terms. Concrete sub-steps: write out the telescoping sum chains for the (4,3) and (2,5) composition classes, find the general rule pattern → certificate, and prove the interior sum-sign lemmas generalizing the boundary lemmas (which (iii) windows force which interior triple-sum signs, given the pattern).
+3. **The certificate-existence lemma** (the single remaining gap at k = 5): prove every valid cell admits a unit-coefficient decomposition of `F` into `(Σk-1)/2` negative terms. New narrowing: every optimal-cell certificate can be chosen to use only **aligned** ordering edges (lower-rank even position → higher-rank odd position). The remaining task is to prove that some subset of aligned edges always leaves a residual coverable by triple sums, and to find a deterministic pattern → subset rule.
 4. Formalize the insertion induction: one inserted arc adds exactly one term to the certificate (consistent with the ladder's `-1·EPS` drift per pair). With 3, this would prove Conjecture 6 for all inflation-reachable configurations; with a reduction argument (every valid configuration deflates to a base), for all configurations.
 5. Investigate total unimodularity of the cell constraint matrices, which would explain the all-unit duals and possibly hand over the existence lemma via LP integrality theory.
 6. Rational-arithmetic MILP re-verification of the k = 5 base over ALL cells (closes the EPS hole; the optimal cells are already exact via certificates).

@@ -335,3 +335,45 @@ a min-max theorem. Induction step (insertion adds one term) still to formalize.
 - Python-loop exact distance inside optimizers (attempt 3).
 - Background processes in the sandbox (attempt 4).
 - accept_tol looser than ~1e-6·diam: near-miss population starts at 1.7e-5, would contaminate counts.
+
+## Session 2026-07-25 (cont.): certificate-existence lemma — aligned-edge restriction
+
+### Direction chosen
+Push on the single remaining gap for Conjecture 6 at k=(5,5,5): show that every optimal cell admits a unit-coefficient certificate, and try to find a pattern-independent rule that constructs it.
+
+### Method
+Wrote two new tools:
+- `cert_analyze.py`: extracts, for each of the 120 symmetry-reduced optimal cells, the active ordering edges, residual objective positions per sequence, and active triple-sum terms.
+- `cert_synth.py`: tests synthetic certificate constructions. It builds a within-cell MILP restricted to subsets of **aligned** ordering edges (lower-rank even position -> higher-rank odd position), then solves a triple-sum cover ILP for the residual.
+
+"Aligned" means the ordering edge's contribution (+e_a - e_b) matches the objective signs at a and b. Misaligned edges were never used by any LP dual in the original run, so the first test was whether aligned edges alone suffice.
+
+### Verified results
+1. **All 120 optimal cells have aligned-edge-only unit certificates.**
+   - `cert_synth.py aligned_subsets_all` finds a valid certificate for every record.
+   - Compositions match the LP duals exactly: (6,1) x35, (4,3) x57, (2,5) x28.
+   - No certificate requires a misaligned ordering edge.
+
+2. **The "use all aligned edges" rule works only for the (6,1) class.**
+   - Fixing every aligned adjacent pair and covering the leftover residual with triple sums succeeds for 35/120 records.
+   - The other 85 records need a subset of aligned edges; the residual then forms a longer run that is covered by a telescoping chain of triple sums.
+
+3. **The aligned-edge restriction survives at k=(7,7,7).**
+   - Tested on the valid cell in `k777_seed.json` (patterns (1,2,5,4,3,6,7), identity, (1,2,7,6,5,4,3)).
+   - Found a certificate with 7 aligned ordering edges + 3 triple sums = 10 rows, matching the predicted `(3*7-1)/2` count.
+
+4. **New finite certificate conjecture.**
+   - For any valid cell, there exists a subset of aligned adjacent ordering edges whose residual signed-positions can be tiled by triple sums in a way consistent with the cell's sign tensor.
+   - This reduces certificate existence to a finite combinatorial condition on the pattern triple and the axiom-(iii) sign constraints.
+
+### Files added
+- `cert_analyze.py` — `detail | all | summary`.
+- `cert_synth.py` — `min | min_all | aligned | aligned_all | aligned_subsets_all | export`.
+- `cert_details.txt` — human-readable anatomy of all 120 certificates.
+- `cert_aligned.json` — aligned-edge-only synthetic certificates for all 120 records.
+
+### Open next steps
+1. Find a **deterministic rule** for which aligned edges to keep, based only on the pattern triple (eliminating the subset search).
+2. Prove the residual is always coverable by triple sums using interior axiom-(iii) sign lemmas (generalizing the boundary lemmas in `margin_law_notes.md`).
+3. Test the aligned-edge conjecture on more k=7 and k=9 cells from the inflation ladders.
+4. Connect the insertion induction to the aligned-edge picture: one inserted arc should add exactly one aligned edge or one new triple-sum link to the certificate.

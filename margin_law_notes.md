@@ -61,6 +61,25 @@ Scope caveat: this settles the OPTIMAL cell of each pattern triple exactly.
 The full base-case verdict over all cells rests on the float MILP; the
 certificates above remove float doubt only where they exist.
 
+### Aligned-edge restriction (newly verified)
+
+All 120 optimal-cell certificates can be chosen to use ONLY **aligned**
+ordering edges: consecutive-rank pairs (a,b) with rank(a) < rank(b),
+OBJ[a] = +1, OBJ[b] = -1. No LP dual uses a misaligned ordering edge.
+The identity-pattern theorem is the special case that uses all aligned
+edges plus one boundary triple sum. For non-identity patterns, a subset
+of aligned edges is kept and the residual positions are covered by a
+telescoping chain of triple-sum terms.
+
+A brute-force subset search over aligned edges finds a valid certificate
+for every k=(5,5,5) record, reproducing the (6,1)/(4,3)/(2,5)
+composition counts. The same restriction also holds for a tested
+k=(7,7,7) cell from the inflation ladder. This motivates the conjecture:
+
+certificate existence = for every valid pattern triple, some subset of
+aligned edges leaves a residual that can be tiled by triple sums
+consistent with axiom (iii).
+
 ## Observed, not yet proven
 
 - The margin law itself across all patterns: verified exhaustively at

@@ -11,3 +11,4 @@ cert_details.txt
 __pycache__/dual_cert.cpython-314.pyc
 __pycache__/cert_analyze.cpython-314.pyc
 __pycache__/cert_synth.cpython-314.pyc
+.venv/
