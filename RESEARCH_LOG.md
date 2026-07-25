@@ -377,3 +377,45 @@ Wrote two new tools:
 2. Prove the residual is always coverable by triple sums using interior axiom-(iii) sign lemmas (generalizing the boundary lemmas in `margin_law_notes.md`).
 3. Test the aligned-edge conjecture on more k=7 and k=9 cells from the inflation ladders.
 4. Connect the insertion induction to the aligned-edge picture: one inserted arc should add exactly one aligned edge or one new triple-sum link to the certificate.
+
+## Session 2026-07-25 (cont.): higher-k test of the aligned-edge conjecture
+
+### Direction chosen
+Test whether the aligned-edge-only certificate property survives at k > 5 and refine the conjecture if it fails.
+
+### Method
+1. Modified `inflate.py` to dump the full list of settled cells (`"cells": [...]`) in ladder output.
+2. Ran a 30-second inflation ladder from three k=5 seeds, producing 2,319 cells up to k=(25,25,23).
+3. Wrote `cert_test_higher.py`: an ILP that tests, for an arbitrary valid cell, whether a unit-certificate exists using only aligned ordering edges.
+4. Tested all cells with max sequence length ≤ 15.
+5. For pattern triples where no ladder cell had an aligned-edge cert, wrote `solve_unbalanced.py` to solve the global MILP for that exact triple and test the optimum.
+6. Spot-checked 10 random k=(7,7,7) pattern triples by global MILP.
+
+### Verified results
+1. **Aligned-edge certs are not universal over arbitrary valid cells.**
+   - Of 1,103 cells with max k ≤ 15, 1,087 (98.5%) have aligned-edge-only certificates.
+   - The 16 failures are all small/unbalanced cells: 1 at k=(5,5,5), 3 at (7,5,5), 12 at (7,7,5).
+   - In every failing case, the cell's `F` is far below the global optimum for its pattern triple (e.g. ladder seed at -7e-4 vs exhaustive optimum -7e-5). The cells are suboptimal cells inside their pattern triple.
+
+2. **Every tested GLOBAL optimum has an aligned-edge-only certificate.**
+   - All 16 "no-ok" pattern triples, when solved to global optimality by MILP, yield an aligned-edge-only certificate with the predicted row count.
+   - All 10 random k=(7,7,7) pattern triples solved to global optima also yield aligned-edge-only certificates (10 ordering + 0 triple? Actually 10 rows total, matching `(21-1)/2`).
+   - Every balanced size k ≥ 7 represented in the ladder (7,7,7), (9,9,9), ..., (15,15,15) has 100% aligned-edge certs among ladder cells, and every represented pattern triple has at least one ok cell.
+
+3. **Refined certificate-existence conjecture.**
+   - Strong form: for every pattern triple, the cell that maximizes `F` admits a unit-coefficient, aligned-edge-only certificate.
+   - This is exactly the form needed to clear a pattern triple: only the global optimum matters.
+   - Verified empirically for all 120 k=(5,5,5) triples, all 16 investigated unbalanced triples up to k=(7,7,5), and 10 random k=(7,7,7) triples.
+
+### Files added
+- `cert_test_higher.py` — test aligned-edge-only certs on arbitrary cells.
+- `solve_unbalanced.py` — solve global MILP for specific pattern triples and test the optimum.
+- `ladder_k7_cells.json` — inflation ladder with full cell dump (2,319 cells, up to k=(25,25,23)).
+- `aligned_higher_results.json` — per-cell aligned-edge test results (max k ≤ 15).
+- `no_ok_triples.json` — the 16 pattern triples with no ok ladder cell.
+
+### Open next steps
+1. Convert the refined conjecture into a proof strategy: show that at the global optimum of any pattern triple, the LP dual has an aligned-edge-only basis. The remaining task is to prove the residual positions can be tiled by triple sums.
+2. Find a deterministic rule for the aligned-edge subset at the global optimum, or prove that the ILP's integrality/TU structure guarantees one exists.
+3. Extend the global-MILP spot checks to a systematic sample of k=(7,7,7) pattern triples (there are ~12k symmetry-reduced triples; a few hundred random samples would give high confidence).
+4. Connect insertion induction to aligned edges: an inserted nested pair should add exactly one aligned edge to the certificate or extend one triple-sum chain by one link.

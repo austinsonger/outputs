@@ -73,12 +73,25 @@ telescoping chain of triple-sum terms.
 
 A brute-force subset search over aligned edges finds a valid certificate
 for every k=(5,5,5) record, reproducing the (6,1)/(4,3)/(2,5)
-composition counts. The same restriction also holds for a tested
-k=(7,7,7) cell from the inflation ladder. This motivates the conjecture:
+composition counts. Higher-k tests refine this:
 
-certificate existence = for every valid pattern triple, some subset of
-aligned edges leaves a residual that can be tiled by triple sums
-consistent with axiom (iii).
+- Among 1,103 inflation cells with max sequence length ≤ 15, 98.5% have
+  aligned-edge-only certificates. The few failures are suboptimal cells
+  inside their pattern triple.
+- For every pattern triple where no ladder cell had an aligned-edge cert,
+  solving the global MILP for that triple produces an optimum that DOES
+  have an aligned-edge-only certificate.
+- 10 random k=(7,7,7) pattern triples solved to global optima all have
+  aligned-edge-only certificates.
+
+This motivates the refined conjecture:
+
+**Refined certificate-existence conjecture.** For every pattern triple,
+the cell that maximizes F admits a unit-coefficient certificate using
+only aligned ordering edges plus triple sums.
+
+This is the form needed to clear a whole pattern triple, because only
+the maximizing cell controls the sign of sup F.
 
 ## Observed, not yet proven
 
