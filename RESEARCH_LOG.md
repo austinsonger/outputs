@@ -300,6 +300,35 @@ the decomposition.
 4. Rational re-verification pass (certificates are integral, so exact rational
    checking is trivial once extracted: just verify 7 inequalities sum to F).
 
+---
+
+## Session 2026-07-25 (cont.): certificates classified, THREE HAND PROOFS (`margin_law_notes.md`)
+
+### Classification of all 120 optimal-cell certificates (`cert_class.json`)
+- 120/120 unit multipliers; 120/120 exactly 7 active constraints; 0/120 box active.
+- 120/120 pass the EXACT integer identity: objective vector = sum of active rows
+  (entries in {-1,0,1}, checked in integer arithmetic). Those cells are now settled
+  with NO floating point in the final step.
+- Compositions (n_ord, n_sum): (6,1) x35, (4,3) x57, (2,5) x28. n_sum always odd.
+
+### Proven by hand (full proofs in margin_law_notes.md)
+1. Lemma 1: axiom (iii) window (0,0,0) forces sgn(y_{1,1}+y_{2,1}+y_{3,1}) = -1,
+   for any odd k_i, any pattern.
+2. Lemma 2: window (k1,k2,k3) forces sgn(y_{1,k1}+y_{2,k2}+y_{3,k3}) = -1, same
+   generality.
+3. THEOREM: Conjecture 6 holds for identity patterns (all sequences increasing),
+   ALL odd k1,k2,k3, with the sharp constant F <= -((k1+k2+k3-1)/2)*margin.
+   Proof = descents + Lemma 2. Matches the observed -7 EPS exactly.
+4. Proposition: in any unit certificate, #(triple-sum terms) is odd and
+   #(sign -1) = #(sign +1) + 1. (Sum the entries of the vector identity.)
+
+### Where the general case now stands
+Remaining gap: certificate EXISTENCE for every valid cell of every pattern (observed
+at all 120 optima, plus the parity and boundary structure proven). The (4,3)/(2,5)
+classes use telescoping sum chains; the general rule pattern -> certificate is the
+missing combinatorial lemma. Integrality of all duals hints at total unimodularity /
+a min-max theorem. Induction step (insertion adds one term) still to formalize.
+
 ### Ruled out / never repeat
 - Proving the general conjecture in-session. Not a candidate activity.
 - Naive KD-only acceptance without scale-aware residual bounds (attempt 1-2).
