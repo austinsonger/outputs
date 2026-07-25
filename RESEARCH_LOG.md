@@ -258,6 +258,48 @@ margin. If provable, it implies Conjecture 6 outright.
 `exhaustive_k5.py`, `ex_a.json`, `ex_b.json`, `ex_c.json`, `ex_probe.json`,
 `ladder1.json`, `ladder2.json`, `k777_seed.json`, `k777_walk.json`.
 
+---
+
+## Session 2026-07-25 (cont.): margin law pinned + dual certificates extracted (`dual_cert.py`)
+
+### Mixed-size law: CONFIRMED, 5-for-5
+Generalized MILP for unequal sequence lengths. Blind predictions hit exactly:
+- (5,5,7): predicted -8e-5, got -8e-5 (3 pattern triples)
+- (5,7,9): predicted -10e-5, got -10e-5 (3 pattern triples)
+The law stands as:  sup F = -((k1+k2+k3-1)/2) * EPS
+Verified: (5,5,5) exhaustive; (7,7,7), (9,9,9), (5,5,7), (5,7,9) spot-checked. No misses.
+
+### Dual certificates: UNIT MULTIPLIERS, INVARIANT COUNT
+For each sampled optimal cell (records 0, 7, 44, 87, 119 = pattern triples
+[0,0,0], [0,0,7], [1,2,3], [3,3,5], [7,7,7]):
+- ALL dual multipliers are EXACTLY 1 (integral certificate).
+- Active constraint count is EXACTLY 7 = (k1+k2+k3-1)/2 in every cell.
+- Composition varies: 6 ordering + 1 triple-sum, or 4 ordering + 3 triple-sum.
+- Box bounds never active: certificates are purely cone-internal.
+
+Identity-pattern certificate, written out (record 0): F literally decomposes as
+  F = sum_i [(y_i1 - y_i2) + (y_i3 - y_i4)]  +  (y_15 + y_25 + y_35)
+6 ordering descents + 1 triple sum that axiom (iii) forces negative. Human-readable.
+
+### Emerging theorem shape
+For every valid cell, F equals a sum of exactly (k1+k2+k3-1)/2 quantities, each
+individually forced negative (ordering descents and (iii)-forced signed triple sums),
+with unit coefficients. Integrality of ALL observed duals suggests total unimodularity
+or a min-max/matching theorem underneath. Arc insertion adds +1 to the count
+(consistent with the ladder's observed -1 EPS drift per inserted pair and the +3 per
+equal-k step). Induction target: every insertion adds exactly one negative term to
+the decomposition.
+
+### Next (in order)
+1. Classify all 120 k=5 certificates by composition (n_ord, n_sum) and by which
+   triple sums appear; look for the telescoping chain structure (record 7's sums
+   telescope through shared indices).
+2. Prove the identity-pattern case by hand: show (iii) forces the last-elements
+   triple sum negative for increasing sequences. Small, self-contained lemma.
+3. Formalize the insertion step: one inserted arc = one new descent term.
+4. Rational re-verification pass (certificates are integral, so exact rational
+   checking is trivial once extracted: just verify 7 inequalities sum to F).
+
 ### Ruled out / never repeat
 - Proving the general conjecture in-session. Not a candidate activity.
 - Naive KD-only acceptance without scale-aware residual bounds (attempt 1-2).
