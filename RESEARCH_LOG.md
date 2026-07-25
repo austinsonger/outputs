@@ -165,6 +165,51 @@ Queued instead (next session): structural generators for valid configs, two cand
 ### Session file inventory (added today)
 `slope_onset.png`, `conj6_search.py`, `conj6_k5_lp.json` (best settled cell), `state_down.json`, `state_up.json`, `branch_continuation.png`, `tao_2017_notes.md`, `seed_sweep.py`, `seeds.json`, `seed_sweep.png`.
 
+---
+
+## Session 2026-07-25 (cont.): arc-inflation ladder (`inflate.py`)
+
+### Method
+Grow valid Conjecture 6 configurations instead of searching for them: insert an adjacent
+nested pair (w+1e-3, w+2e-3) next to an existing value w. Meander insertion preserves
+axiom (ii); copied signs usually preserve (iii); every candidate is verified exactly and
+every new sign-cell settled by LP. This bypasses the k>=7 wall that killed random search.
+
+### Results
+- Inflation preserves validity extremely robustly. First (unbalanced) run inflated one
+  sequence to k=107, settling ~600 cells along the way, all valid.
+- Balanced ladder (insert into shortest sequence): reached k=(23,23,21) in 30s,
+  ~90 cells settled at EVERY balanced level: (7,7,7), (9,9,9), ..., (21,21,21).
+- Neighbor walk from a (7,7,7) config (crossing cell walls, i.e. sampling cells NOT
+  on the inflation tree): 6 further cells, best F = -0.001.
+- ZERO counterexamples anywhere. Sup F per cell sits just below 0 (margin-limited) at
+  every k. Files: `ladder1.json`, `ladder2.json`, `k777_walk.json`, `k777_seed.json`.
+
+### Where this stands historically
+Prior art (per Tao's comment thread, 2016): Wagner checked ~500 random instances at
+(7,7,7); Tao suggested (5,5,5) "fairly straightforward" numerically. We now have exact
+per-cell LP suprema for hundreds of cells at sizes up to k=23 per sequence. Conjecture 6
+looks true and TIGHT (sup F -> 0^-) across the entire explored region.
+
+### Structural insight worth pursuing (possibly the real prize)
+Arc insertion changes F only marginally, and inflated cells inherit F < 0 from parents.
+This suggests an induction strategy for PROVING Conjecture 6:
+  (a) settle the finite base case k=(5,5,5) exhaustively (8^3 pattern triples; MILP over
+      sign tensors per triple, symmetry-reduced; plausibly a weekend of compute),
+  (b) prove F < 0 is preserved under arc insertion (looks like a finite local computation
+      on how the LP optimum moves under nesting),
+  (c) prove every valid configuration reduces to a small base by arc DELETIONS
+      (meander/temperley-lieb structure theory; this is the hard part).
+If (c) fails, the non-reducible "prime" configurations are exactly the interesting
+objects, and the search should target them.
+
+### Queued next
+- Exhaustive k=(5,5,5): enumerate all 512 pattern triples, MILP or LP-per-sign-cell with
+  symmetry reduction. Would make the base case a THEOREM (modulo floating point; use
+  rational arithmetic for the final certificate).
+- Characterize which insertions/deletions preserve validity (toward step (c)).
+- Prime-configuration search at k=7: cells whose arc-deletions all break validity.
+
 ### Ruled out / never repeat
 - Proving the general conjecture in-session. Not a candidate activity.
 - Naive KD-only acceptance without scale-aware residual bounds (attempt 1-2).
