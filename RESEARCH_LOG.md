@@ -643,3 +643,25 @@ Ran `cert_deterministic.py` on all 2,319 cells in `ladder_k7_cells.json` (balanc
 1. Prove the combinatorial decomposition conjecture. The unimodal sign-tensor lemma and the meander/pattern structure are the ingredients.
 2. Show that the margin-law row count is exactly the dual LP optimum for maximizing cells, hence the conjecture implies Conjecture 6 with the sharp constant.
 3. Convert the MILP-based existence proof into a polynomial-time combinatorial algorithm (greedy matching in the unimodal tensor).
+
+## Session 2026-07-25 (cont.): proof plan for combinatorial decomposition
+
+### Direction chosen
+Turn the strong empirical evidence into a structured proof plan for the combinatorial decomposition conjecture.
+
+### Method
+Updated `margin_law_notes.md` with a three-step attack plan based on the unimodal sign-tensor lemma and the reduction of certificate construction to a signed 3D matching problem in a step-function tensor.
+
+### Verified results / reasoning
+1. **Rank-ordered reduction is clean.** In rank coordinates, aligned edges are adjacent-rank pairs, dropping an edge exposes two ranks of opposite sign, and the objective vector becomes a signed set of ranks.
+2. **Sign tensor is a 3D step function.** For fixed two coordinates, the sign changes at most once as the third rank increases. This makes the positive and negative triple sets monotone lower/upper sets in the product of rank orders.
+3. **Certificate construction = signed 3D b-matching.** We need to assign signed triples so that each exposed rank gets the required signed degree. Ferrers bipartite graphs admit greedy matchings; the 3D step-function analogue is the natural object to study.
+4. **Parity theorem constrains drop count.** Only an even number of aligned edges need be considered, giving a deterministic search space.
+
+### Files updated
+- `margin_law_notes.md` — new "Attack plan for the general case" section.
+
+### Open next steps
+1. Derive Hall-type conditions for 3D b-matchings in step-function tensors.
+2. Prove those conditions are always satisfiable after an even number of aligned-edge drops, using the meander structure.
+3. Implement a greedy residual-cover algorithm that exploits the step-function structure and test it against the MILP builder.

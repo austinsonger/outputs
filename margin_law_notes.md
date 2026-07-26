@@ -174,16 +174,51 @@ matchings in them should admit greedy decompositions.
 
 ## Attack plan for the general case
 
-Non-identity patterns replace some descents with telescoping chains of
-triple sums (observed: sums sharing indices, alternating signs). The
-natural object: a path/matching in a graph whose vertices are the sequence
-positions and whose edges are descents and (iii)-forced sums. Integrality
-of all 120 duals suggests the constraint matrix restricted to valid cells
-is totally unimodular or the certificate is a min-max dual of a
-combinatorial packing. Next concrete steps:
-1. For the (4,3) and (2,5) composition classes, write out the telescopes and
-   find the general rule mapping pattern -> certificate.
-2. Prove the interior sum-sign lemmas generalizing Lemmas 1-2: which
-   (iii) windows force which interior triple-sum signs, given the pattern.
-3. Induction: inserted arc contributes its own descent term (or extends a
-   telescope by one link).
+The evidence now points to the stronger **combinatorial decomposition
+conjecture**: every valid cell admits a unit-coefficient decomposition of
+the objective vector into aligned ordering edges and signed triple-sum
+rows. The proof should proceed in three steps.
+
+### Step 1. Rank-ordered reduction.
+
+Order positions in each sequence by rank. In these coordinates the sign
+tensor is a 3D step function (unimodal lemma). An aligned ordering edge is
+an adjacent-rank pair `(2j-1, 2j)` that happens to have the lower rank at
+an even-indexed position and the higher rank at an odd-indexed position.
+Dropping such an edge exposes two ranks with opposite residual signs. The
+objective vector becomes a signed set of ranks: each exposed rank `r` in
+sequence `i` carries sign `-OBJ[pos_i(r)]`.
+
+### Step 2. Signed 3D matching in a step-function tensor.
+
+The remaining problem is: choose signed triples of ranks so that each
+exposed rank receives the correct signed degree. Because the sign tensor
+is a step function, the set of triples of a given sign is a monotone
+(lower or upper) set in the product of rank orders. Such tensors are the
+3D analogue of Ferrers/Monge bipartite graphs. For Ferrers bipartite
+graphs, Hall's condition reduces to degree comparisons and greedy matchings
+work. The 3D version should admit a similar greedy decomposition, with the
+meander/pattern structure supplying the necessary degree conditions.
+
+### Step 3. Constructive selection of dropped edges.
+
+The parity theorem says the number of dropped aligned edges must be even.
+A constructive rule is therefore: keep all aligned edges; if the max-rank
+triple has the right sign, one triple finishes the certificate; otherwise
+drop aligned edges two at a time (or all at once) until the residual signed
+rank sets satisfy the degree conditions from Step 2. The ladder data
+(2,319 cells, all success) and the global-MILP data (k=5,7,9 optima, all
+success) show such a drop set always exists; the task is to prove it from
+the unimodal/meander structure.
+
+Next concrete steps:
+1. Prove the unimodal sign-tensor lemma directly from axioms (i)-(iii)
+   (the current proof uses only monotonicity of sorted values).
+2. Formulate the residual cover problem as a 3D b-matching in a
+   step-function hypergraph and derive Hall-type necessary/sufficient
+   conditions.
+3. Show those conditions are always satisfiable after an even number of
+   aligned-edge drops, using the non-crossing structure of the meander
+   patterns.
+4. Convert the proof into a polynomial-time greedy algorithm, removing the
+   MILP from the certificate builder entirely.
