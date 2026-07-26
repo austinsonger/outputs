@@ -93,6 +93,44 @@ only aligned ordering edges plus triple sums.
 This is the form needed to clear a whole pattern triple, because only
 the maximizing cell controls the sign of sup F.
 
+### Parity theorem for minimal aligned-edge drops
+
+Let k be odd and consider a balanced cell (k,k,k). Write the objective
+sign vector as `OBJ[j] = (-1)^j`. An aligned ordering edge (a,b) contributes
+`+1` at the even position a and `-1` at the odd position b. If `e_i`
+aligned edges are kept in sequence i, the residual signed difference
+
+    D_i = (sum over even j of residual[j]) - (sum over odd j of residual[j])
+
+is `1 - 2·e_i`, because each kept edge contributes equally and oppositely
+to the even and odd sums.
+
+Every triple-sum row contributes `±1` at exactly three positions, one in each
+sequence. Modulo 2, its contribution to `D_i` is therefore `1`, regardless of
+sign or of which positions are hit. Hence, if `N` triple-sum rows are used,
+`D_i ≡ N (mod 2)` for each i. Since `D_i = 1 - 2·e_i` is odd, `N` must be odd.
+
+At size (k,k,k) the margin law gives target row count `(3k-1)/2`. The total
+number of aligned edges available is `3·(k-1)/2`, so
+
+    N = (3k-1)/2 - (3·(k-1)/2 - drops) = 1 + drops.
+
+Thus `N` is odd **iff the number of dropped aligned edges is even**.
+Empirically this is sharp: minimal-drop counts are always 0, 2, 4, … .
+
+**Sign condition for zero drops.** With all aligned edges kept, the only
+residual position in each sequence is the position of the largest rank k.
+The residual is coverable by a single triple-sum row exactly when the sign
+of `y^1_{p_1}+y^2_{p_2}+y^3_{p_3}` (with `p_i` the position of rank k in
+sequence i) is negative. This happens in about 1/3 of k=5 and 1/6 of k=7
+random optima; otherwise an even number of edges must be dropped.
+
+**Constructive selection rule.** The parity theorem gives a deterministic
+search: keep all aligned edges, use the max-rank triple if its sign is
+negative, otherwise try dropping 2, 4, 6, ... aligned edges in a fixed order
+until the residual becomes an integer conic combination of signed triple
+sums. This rule succeeds on every tested maximizing cell (k=5, 7, and 9).
+
 ## Observed, not yet proven
 
 - The margin law itself across all patterns: verified exhaustively at

@@ -3,7 +3,7 @@
 Random spot-check of the aligned-edge conjecture at arbitrary odd k.
 
 Usage:
-  python3 -u sample_k.py run K N OUT.json [SEED]
+  python3 -u sample_k.py run K N OUT.json [SEED] [TIME_LIMIT_S]
 
 Solves the global MILP for N random symmetry-reduced pattern triples at size k
 and tests whether each optimum has an aligned-edge-only unit certificate.
@@ -20,7 +20,7 @@ from solve_unbalanced import solve_triple
 from cert_test_higher import has_aligned_certificate
 
 
-def main(k, N, out_json, seed=0):
+def main(k, N, out_json, seed=0, time_limit=30.0):
     if k % 2 == 0:
         raise ValueError("k must be odd")
     pats = enumerate_patterns(k)
@@ -35,7 +35,7 @@ def main(k, N, out_json, seed=0):
     for idx in chosen:
         tri = all_indices[idx]
         P = [pats[i] for i in tri]
-        F, ys = solve_triple(P, time_limit=30.0)
+        F, ys = solve_triple(P, time_limit=time_limit)
         if F is None:
             results.append(dict(k=k, tri=list(tri), patterns=[list(p) for p in P],
                                 F=None, ys=None, ok=False, reason="milp_fail"))
@@ -57,4 +57,5 @@ if __name__ == "__main__":
     N = int(sys.argv[3])
     out = sys.argv[4]
     seed = int(sys.argv[5]) if len(sys.argv) > 5 else 0
-    main(k, N, out, seed)
+    time_limit = float(sys.argv[6]) if len(sys.argv) > 6 else 30.0
+    main(k, N, out, seed, time_limit)

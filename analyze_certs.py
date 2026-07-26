@@ -86,10 +86,16 @@ def main(path):
     print(f"loaded {len(data)} records")
     dist = {}
     sgn_dist = {}
+    skipped = 0
     for rec in data:
+        if rec.get("ys") is None:
+            skipped += 1
+            continue
         drop, s_max, keep = min_drops_and_max_sign(rec, time_limit=5.0)
         dist[(drop, s_max)] = dist.get((drop, s_max), 0) + 1
         sgn_dist[s_max] = sgn_dist.get(s_max, 0) + 1
+    if skipped:
+        print(f"skipped {skipped} records with no ys")
     print("sign of max-rank triple:", sgn_dist)
     print("(min_drops, sgn_max) distribution:")
     for k in sorted(dist):

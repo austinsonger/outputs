@@ -41,7 +41,7 @@ Full experimental history, including every dead end, lives in [RESEARCH_LOG.md](
 | **All 120 certificates classified, exact.** Every optimal cell's LP dual has unit multipliers, exactly 7 active constraints, box inactive, and passes the integer identity `objective = Σ active rows` in exact arithmetic. Compositions (n_ord, n_sum): (6,1)×35, (4,3)×57, (2,5)×28 | `cert_class.json`, `dual_cert.py dual` |
 | **Three hand proofs.** Boundary lemmas: axiom (iii) forces the first-elements and last-elements triple sums negative (any odd sizes, any pattern). Theorem: Conjecture 6 holds for identity patterns, ALL odd k, with the sharp constant. Proposition: certificate triple-sum count is odd with negatives outnumbering positives by one | `margin_law_notes.md` |
 | **Aligned-edge restriction.** Every one of the 120 optimal-cell certificates can be chosen using only aligned ordering edges; the same holds for a tested k=(7,7,7) cell. Reduces certificate existence to a finite combinatorial tiling problem | `cert_synth.py aligned_subsets_all`, `cert_aligned.json` |
-| **Refined certificate-existence conjecture verified up to k=15 and 200 random k=7 triples.** 98.5% of inflation cells have aligned-edge-only certs; every failure is a suboptimal cell. All investigated global optima (16 unbalanced triples + 200 random k=7 triples) have aligned-edge-only certs | `cert_test_higher.py`, `aligned_higher_results.json`, `no_ok_triples.json`, `sample_k7_200.json` |
+| **Refined certificate-existence conjecture verified up to k=15 and 200 random k=7 triples; parity theorem and sign-of-max rule proved; deterministic aligned-edge builder succeeds on all tested k=5, k=7, and resolved k=9 records.** 98.5% of inflation cells have aligned-edge-only certs; every failure is a suboptimal cell. All investigated global optima have aligned-edge-only certs. The number of dropped aligned edges in a minimal certificate is always even | `cert_test_higher.py`, `aligned_higher_results.json`, `no_ok_triples.json`, `sample_k7_200.json`, `sample_k7_100_with_ys.json`, `sample_k9_20.json`, `analyze_certs.py`, `cert_greedy.py` |
 
 Prior art for comparison: Wagner checked roughly 500 random `(7,7,7)` instances in 2016, and Tao called `(5,5,5)` "fairly straightforward" numerically. This repo settles `(5,5,5)` exhaustively and reaches k = 23 with exact cell suprema via arc inflation.
 
@@ -114,7 +114,9 @@ python3 -u conj6_search.py patterns 7
 ├── cert_synth.py            # Synthetic certificate construction tests
 ├── cert_test_higher.py      # Test aligned-edge certs on inflation cells
 ├── solve_unbalanced.py      # Global MILP for specific unbalanced triples
-├── sample_k7.py             # Random k=(7,7,7) spot-check sampler
+├── sample_k.py              # Random k=(k,k,k) spot-check sampler (stores ys)
+├── analyze_certs.py         # Minimal aligned-edge drops + parity analysis
+├── cert_greedy.py           # Deterministic aligned-edge certificate builder
 │
 ├── squares_gallery.png      # 4-curve gallery with found squares
 ├── roughness_sweep.png      # Sweep panels + degeneration plot
@@ -137,7 +139,13 @@ python3 -u conj6_search.py patterns 7
 ├── aligned_higher_results.json  # Aligned-edge test results up to k=15
 ├── no_ok_triples.json       # Triples needing global-MILP recheck
 ├── sample_k7_200.json       # 200 random k=(7,7,7) triples, all ok
-└── sample_k7_50.json        # first 50-triple batch
+├── sample_k7_100_with_ys.json  # 100 random k=(7,7,7) triples with stored ys
+├── sample_k7_50.json        # first 50-triple batch
+├── sample_k5_120.json       # exhaustive k=(5,5,5) with stored ys
+├── sample_k9_20.json        # k=(9,9,9) 20-triple spot-check; 18/18 resolved have aligned certs
+├── certs_k5_greedy.json     # deterministic aligned-edge certs for k=(5,5,5)
+├── certs_k7_greedy.json     # deterministic aligned-edge certs for 100 k=(7,7,7) records
+└── certs_k9_greedy.json     # deterministic aligned-edge certs for 18 resolved k=(9,9,9) records
 ```
 
 Every script is a plain CLI with `mode` as `argv[1]`. There is no package, no build step, and no config file. Run scripts from the repo root, since `seed_sweep.py`, `continuation.py`, and `inflate.py` import from their siblings.
@@ -298,16 +306,44 @@ For pattern triples where `cert_test_higher.py` found no aligned-edge ladder cel
 python3 -u solve_unbalanced.py   # reads aligned_higher_results.json, writes no_ok_triples.json, tests them
 ```
 
-### sample_k7.py
+### sample_k.py
 
-Random spot-check of the aligned-edge conjecture at k=(7,7,7) by global MILP.
+Random spot-check of the aligned-edge conjecture at arbitrary odd k by global MILP. Stores the optimal `ys` so certificates can be re-analyzed.
 
 | Command | Description |
 |---|---|
-| `python3 -u sample_k7.py run N OUT.json [SEED]` | Solve N random symmetry-reduced k=(7,7,7) pattern triples and test aligned-edge certs. |
+| `python3 -u sample_k.py run K N OUT.json [SEED] [TIME_LIMIT_S]` | Solve N random symmetry-reduced k=(K,K,K) pattern triples and test aligned-edge certs. |
 
 ```bash
-python3 -u sample_k7.py run 50 sample_k7_50.json 2
+python3 -u sample_k.py run 7 50 sample_k7_50.json 2
+python3 -u sample_k.py run 9 20 sample_k9_20.json 2 60.0
+```
+
+### analyze_certs.py
+
+Analyze the aligned-edge certificates produced by `sample_k.py`. Computes the minimum number of aligned ordering edges that must be dropped so the residual target is coverable by triple sums, and reports the correlation with the sign of the max-rank triple.
+
+| Command | Description |
+|---|---|
+| `python3 -u analyze_certs.py min_drops SAMPLE.json` | Print `(min_drops, sgn_max)` distribution. |
+
+```bash
+python3 -u analyze_certs.py min_drops sample_k7_100_with_ys.json
+```
+
+### cert_greedy.py
+
+Deterministic aligned-edge certificate builder. Uses the parity theorem to
+search only even-sized drop sets, and returns a certificate as soon as the
+residual target is coverable by signed triple sums. Verified to succeed on all
+tested k=(5,5,5), k=(7,7,7), and resolved k=(9,9,9) maximizing cells.
+
+| Command | Description |
+|---|---|
+| `python3 -u cert_greedy.py build SAMPLE.json OUT.json` | Build deterministic aligned-edge certs for every record with stored `ys`. |
+
+```bash
+python3 -u cert_greedy.py build sample_k7_100_with_ys.json certs_k7_greedy.json
 ```
 
 ## How the square finder works
