@@ -81,7 +81,7 @@ composition counts. Higher-k tests refine this:
 - For every pattern triple where no ladder cell had an aligned-edge cert,
   solving the global MILP for that triple produces an optimum that DOES
   have an aligned-edge-only certificate.
-- 10 random k=(7,7,7) pattern triples solved to global optima all have
+- 200 random k=(7,7,7) pattern triples solved to global optima all have
   aligned-edge-only certificates.
 
 This motivates the refined conjecture:

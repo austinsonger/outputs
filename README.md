@@ -41,7 +41,7 @@ Full experimental history, including every dead end, lives in [RESEARCH_LOG.md](
 | **All 120 certificates classified, exact.** Every optimal cell's LP dual has unit multipliers, exactly 7 active constraints, box inactive, and passes the integer identity `objective = Σ active rows` in exact arithmetic. Compositions (n_ord, n_sum): (6,1)×35, (4,3)×57, (2,5)×28 | `cert_class.json`, `dual_cert.py dual` |
 | **Three hand proofs.** Boundary lemmas: axiom (iii) forces the first-elements and last-elements triple sums negative (any odd sizes, any pattern). Theorem: Conjecture 6 holds for identity patterns, ALL odd k, with the sharp constant. Proposition: certificate triple-sum count is odd with negatives outnumbering positives by one | `margin_law_notes.md` |
 | **Aligned-edge restriction.** Every one of the 120 optimal-cell certificates can be chosen using only aligned ordering edges; the same holds for a tested k=(7,7,7) cell. Reduces certificate existence to a finite combinatorial tiling problem | `cert_synth.py aligned_subsets_all`, `cert_aligned.json` |
-| **Refined certificate-existence conjecture verified up to k=15.** 98.5% of inflation cells have aligned-edge-only certs; every failure is a suboptimal cell. All investigated global optima (16 unbalanced triples + 10 random k=7 triples) have aligned-edge-only certs | `cert_test_higher.py`, `aligned_higher_results.json`, `no_ok_triples.json` |
+| **Refined certificate-existence conjecture verified up to k=15 and 200 random k=7 triples.** 98.5% of inflation cells have aligned-edge-only certs; every failure is a suboptimal cell. All investigated global optima (16 unbalanced triples + 200 random k=7 triples) have aligned-edge-only certs | `cert_test_higher.py`, `aligned_higher_results.json`, `no_ok_triples.json`, `sample_k7_200.json` |
 
 Prior art for comparison: Wagner checked roughly 500 random `(7,7,7)` instances in 2016, and Tao called `(5,5,5)` "fairly straightforward" numerically. This repo settles `(5,5,5)` exhaustively and reaches k = 23 with exact cell suprema via arc inflation.
 
@@ -114,6 +114,7 @@ python3 -u conj6_search.py patterns 7
 ├── cert_synth.py            # Synthetic certificate construction tests
 ├── cert_test_higher.py      # Test aligned-edge certs on inflation cells
 ├── solve_unbalanced.py      # Global MILP for specific unbalanced triples
+├── sample_k7.py             # Random k=(7,7,7) spot-check sampler
 │
 ├── squares_gallery.png      # 4-curve gallery with found squares
 ├── roughness_sweep.png      # Sweep panels + degeneration plot
@@ -134,7 +135,9 @@ python3 -u conj6_search.py patterns 7
 ├── cert_details.txt         # Human-readable certificate anatomy
 ├── ladder_k7_cells.json     # Inflation ladder with full cell dump (2,319 cells)
 ├── aligned_higher_results.json  # Aligned-edge test results up to k=15
-└── no_ok_triples.json       # Triples needing global-MILP recheck
+├── no_ok_triples.json       # Triples needing global-MILP recheck
+├── sample_k7_200.json       # 200 random k=(7,7,7) triples, all ok
+└── sample_k7_50.json        # first 50-triple batch
 ```
 
 Every script is a plain CLI with `mode` as `argv[1]`. There is no package, no build step, and no config file. Run scripts from the repo root, since `seed_sweep.py`, `continuation.py`, and `inflate.py` import from their siblings.
@@ -293,6 +296,18 @@ For pattern triples where `cert_test_higher.py` found no aligned-edge ladder cel
 
 ```bash
 python3 -u solve_unbalanced.py   # reads aligned_higher_results.json, writes no_ok_triples.json, tests them
+```
+
+### sample_k7.py
+
+Random spot-check of the aligned-edge conjecture at k=(7,7,7) by global MILP.
+
+| Command | Description |
+|---|---|
+| `python3 -u sample_k7.py run N OUT.json [SEED]` | Solve N random symmetry-reduced k=(7,7,7) pattern triples and test aligned-edge certs. |
+
+```bash
+python3 -u sample_k7.py run 50 sample_k7_50.json 2
 ```
 
 ## How the square finder works
@@ -564,7 +579,7 @@ Geometry track:
 
 Combinatorics track (higher value), in attack order:
 
-3. **The certificate-existence lemma** (the single remaining gap at k = 5): prove every valid cell admits a unit-coefficient decomposition of `F` into `(Σk-1)/2` negative terms. Refined target: prove that for every pattern triple, the **maximizing cell** has a certificate using only **aligned** ordering edges (lower-rank even position → higher-rank odd position). Verified empirically up to k = 15 and for random k = 7 triples; the remaining task is to prove the residual is always coverable by triple sums.
+3. **The certificate-existence lemma** (the single remaining gap at k = 5): prove every valid cell admits a unit-coefficient decomposition of `F` into `(Σk-1)/2` negative terms. Refined target: prove that for every pattern triple, the **maximizing cell** has a certificate using only **aligned** ordering edges (lower-rank even position → higher-rank odd position). Verified empirically up to k = 15 and for 200 random k = 7 triples; the remaining task is to prove the residual is always coverable by triple sums.
 4. Formalize the insertion induction: one inserted arc adds exactly one term to the certificate (consistent with the ladder's `-1·EPS` drift per pair). With 3, this would prove Conjecture 6 for all inflation-reachable configurations; with a reduction argument (every valid configuration deflates to a base), for all configurations.
 5. Investigate total unimodularity of the cell constraint matrices, which would explain the all-unit duals and possibly hand over the existence lemma via LP integrality theory.
 6. Rational-arithmetic MILP re-verification of the k = 5 base over ALL cells (closes the EPS hole; the optimal cells are already exact via certificates).

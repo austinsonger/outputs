@@ -419,3 +419,39 @@ Test whether the aligned-edge-only certificate property survives at k > 5 and re
 2. Find a deterministic rule for the aligned-edge subset at the global optimum, or prove that the ILP's integrality/TU structure guarantees one exists.
 3. Extend the global-MILP spot checks to a systematic sample of k=(7,7,7) pattern triples (there are ~12k symmetry-reduced triples; a few hundred random samples would give high confidence).
 4. Connect insertion induction to aligned edges: an inserted nested pair should add exactly one aligned edge to the certificate or extend one triple-sum chain by one link.
+
+## Session 2026-07-25 (cont.): systematic k=(7,7,7) spot-check
+
+### Direction chosen
+Massively increase the empirical base for the refined aligned-edge conjecture by solving the global MILP for many random k=(7,7,7) pattern triples.
+
+### Method
+Wrote `sample_k7.py`: enumerate the 42 k=7 patterns, sample random symmetry-reduced pattern triples, solve each to global optimality with the generalized MILP, then test the optimum for an aligned-edge-only certificate.
+
+Two runs:
+- 50 random triples in foreground, with a 120-second retry for MILP timeouts.
+- 150 random triples in background, with a 120-second retry for timeouts.
+
+### Verified results
+- **200/200 random k=(7,7,7) pattern triples** have aligned-edge-only unit certificates at their global optima.
+- The margin law holds in every case: global optimum `F ≈ -10·EPS`.
+- A few MILPs needed the longer 120-second retry; none remained unresolved.
+
+### Files added
+- `sample_k7.py` — `run N OUT.json [SEED]`.
+- `sample_k7_50.json` — first 50 triples.
+- `sample_k7_150.json` — second 150 triples.
+- `sample_k7_200.json` — merged 200 triple results (200/200 ok).
+
+### Where the conjecture now stands
+- k=(5,5,5): all 120 symmetry-reduced triples verified.
+- k=(7,7,7): 200 random triples verified (global MILP + aligned-edge cert).
+- Inflation cells up to k=(15,15,15): 1,087/1,103 ok; failures were suboptimal cells.
+- Unbalanced triples up to k=(7,7,5): all 16 investigated global optima ok.
+
+The evidence for the refined conjecture — *every pattern triple's maximizing cell has an aligned-edge-only certificate* — is now very strong.
+
+### Open next steps
+1. Turn the empirical pattern into a proof: show that the LP dual at a maximizing cell always admits an aligned-edge-only basis. The remaining combinatorial step is proving the residual positions are tileable by triple sums.
+2. Try to extract a deterministic rule for which aligned edges are kept, using the 200+ solved certificates as data.
+3. Test k=(9,9,9) with a smaller random sample (each MILP is larger and slower).
