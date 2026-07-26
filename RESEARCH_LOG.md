@@ -617,3 +617,29 @@ Tested, for every stored-ys record at k=(5,5,5), (7,7,7), and resolved (9,9,9), 
 1. Prove the unimodal sign-tensor property from axioms (i)-(iii); it is likely a consequence of the non-crossing condition (iii) plus monotonicity of the sorted values.
 2. Design a greedy residual-cover algorithm that exploits the unimodal property, as a step toward a purely combinatorial proof.
 3. Use `cert_deterministic.py` on inflation-ladder cells at k=9 and above, where the MILP step is bypassed, to gather more certificate data without solving global optima.
+
+## Session 2026-07-25 (cont.): all 2,319 ladder cells have aligned-edge certificates
+
+### Direction chosen
+Use the fast deterministic builder on the entire inflation-ladder cell database to see whether aligned-edge certificates exist for arbitrary valid cells, not only global optima.
+
+### Method
+Ran `cert_deterministic.py` on all 2,319 cells in `ladder_k7_cells.json` (balanced sizes up to (25,25,23)) with a 10-second MILP limit per cell. Saved the results to `ladder_all_det_certs.json`.
+
+### Verified results
+1. **Every ladder cell has an aligned-edge-only unit-coefficient certificate.**
+   - `ok=2319, fail=0` in 189.5 seconds.
+   - This includes suboptimal cells that `cert_test_higher.py` had flagged as failures because their certificate uses fewer than the margin-law number of rows.
+2. **Row-count distribution.**
+   - Only 16 cells (all among the previously flagged suboptimal cells with max k ≤ 15) have `n_ord + n_sum < (k1+k2+k3-1)/2`.
+   - All other 2,303 cells use exactly the margin-law row count.
+3. **Implication.** The evidence now supports the stronger **combinatorial decomposition conjecture**: every valid cell admits a unit-coefficient decomposition into aligned ordering edges and signed triple-sum rows. The margin-law row count is the maximum needed; it is achieved exactly by cells attaining the margin-law bound (in particular, the maximizing cell of each pattern triple).
+
+### Files added
+- `ladder_all_det_certs.json` — deterministic aligned-edge certs for all 2,319 ladder cells.
+- `ladder_k15_det_certs.json` — deterministic certs for the 1,103 cells with max k ≤ 15.
+
+### Open next steps
+1. Prove the combinatorial decomposition conjecture. The unimodal sign-tensor lemma and the meander/pattern structure are the ingredients.
+2. Show that the margin-law row count is exactly the dual LP optimum for maximizing cells, hence the conjecture implies Conjecture 6 with the sharp constant.
+3. Convert the MILP-based existence proof into a polynomial-time combinatorial algorithm (greedy matching in the unimodal tensor).
