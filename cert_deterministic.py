@@ -39,7 +39,11 @@ def edge_rank_pair(pat, a, b):
 
 def build_certificate(rec, order="asc", time_limit=10.0):
     ys = [np.array(y, dtype=float) for y in rec["ys"]]
-    pats = [tuple(p) for p in rec["patterns"]]
+    if rec.get("patterns") is not None:
+        pats = [tuple(p) for p in rec["patterns"]]
+    else:
+        pats = [tuple(int(r) for r in (np.argsort(np.argsort(y)) + 1)) for y in ys]
+    pats_out = [list(p) for p in pats]
     ks = [len(y) for y in ys]
     n = sum(ks)
     offs = [0, ks[0], ks[0] + ks[1]]
@@ -113,7 +117,7 @@ def build_certificate(rec, order="asc", time_limit=10.0):
     triples = [triple_meta[i] for i in range(n_triples) if x[n_edges + i] > 0.5]
     return {
         "tri": rec["tri"],
-        "patterns": rec["patterns"],
+        "patterns": pats_out,
         "F": rec["F"],
         "edges": keep_edges,
         "sums": [{"p": int(p), "q": int(q), "r": int(r), "actual_sign": int(s)}

@@ -76,22 +76,29 @@ for every k=(5,5,5) record, reproducing the (6,1)/(4,3)/(2,5)
 composition counts. Higher-k tests refine this:
 
 - Among 1,103 inflation cells with max sequence length ≤ 15, 98.5% have
-  aligned-edge-only certificates. The few failures are suboptimal cells
-  inside their pattern triple.
-- For every pattern triple where no ladder cell had an aligned-edge cert,
-  solving the global MILP for that triple produces an optimum that DOES
-  have an aligned-edge-only certificate.
+  aligned-edge-only certificates with the full margin-law row count. The
+  16 apparent failures are suboptimal cells; when the row-count requirement
+  is relaxed, every one of them still has an aligned-edge-only certificate,
+  just with fewer rows.
+- The fast two-stage MILP builder `cert_deterministic.py` succeeds on **all
+  2,319 ladder cells** up to k=(25,25,23). Only 16 cells use fewer than the
+  margin-law number of rows; every other cell uses exactly the target count.
 - 200 random k=(7,7,7) pattern triples solved to global optima all have
   aligned-edge-only certificates.
+- All resolved k=(9,9,9) global optima have aligned-edge-only certificates.
 
-This motivates the refined conjecture:
+This motivates a stronger conjecture:
 
-**Refined certificate-existence conjecture.** For every pattern triple,
-the cell that maximizes F admits a unit-coefficient certificate using
-only aligned ordering edges plus triple sums.
+**Combinatorial decomposition conjecture.** Every valid cell (satisfying
+axioms (i)-(iii)) admits a unit-coefficient decomposition of the objective
+vector into aligned ordering edges and signed triple-sum rows. The number
+of rows is at most `(k1+k2+k3-1)/2`, with equality exactly for cells that
+achieve the margin-law bound (in particular, the maximizing cell of every
+pattern triple).
 
-This is the form needed to clear a whole pattern triple, because only
-the maximizing cell controls the sign of sup F.
+The refined certificate-existence conjecture for maximizing cells is the
+critical special case, because only the maximizing cell controls the sign
+of `sup F`.
 
 ### Parity theorem for minimal aligned-edge drops
 
@@ -137,14 +144,22 @@ weights on the aligned-edge drop variables. The resulting drop set is unique
 and deterministic, and the builder is 10–50x faster than the explicit
 even-drop search while producing the same minimal drop counts.
 
-**Unimodal sign-tensor observation.** For every tested maximizing cell, the
-sign tensor `S(p,q,r) = sgn(y^1_p + y^2_q + y^3_r)` is unimodal along each
-coordinate when positions are ordered by *rank* (not by index): for fixed
-values of the other two coordinates, `S` takes one sign and then, at most
-once, switches to the other sign as the rank increases. This is verified for
-all k=5, k=7, and k=9 records. It is the 3D analogue of the Monge property
-and is the likely source of the residual tileability: a signed 3D matching in
-a unimodal tensor should admit a greedy decomposition.
+**Unimodal sign-tensor lemma.** For fixed values of two coordinates, the sign
+tensor `S(p,q,r) = sgn(y^1_p + y^2_q + y^3_r)` changes sign at most once when
+the third coordinate is ordered by *rank* (i.e., by increasing value in the
+corresponding sequence).
+
+*Proof.* Let `pos_i(r)` be the position of rank `r` in sequence `i`. Then
+`y^i_{pos_i(r)}` is strictly increasing in `r`. For fixed `p,q`, the function
+`g(r) = y^1_p + y^2_q + y^3_{pos_3(r)}` is strictly increasing, so its sign
+can change from `-` to `+` at most once. The same argument applies to the
+other two coordinates.
+
+This makes `S` a 3D step function: there is a monotone (in each coordinate)
+frontier separating the `-` region from the `+` region. The residual-cover
+problem is therefore a signed 3D matching problem inside a 3D threshold
+function. Such tensors are the 3D analogue of Monge arrays, and signed
+matchings in them should admit greedy decompositions.
 
 ## Observed, not yet proven
 
