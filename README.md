@@ -41,7 +41,7 @@ Full experimental history, including every dead end, lives in [RESEARCH_LOG.md](
 | **All 120 certificates classified, exact.** Every optimal cell's LP dual has unit multipliers, exactly 7 active constraints, box inactive, and passes the integer identity `objective = Σ active rows` in exact arithmetic. Compositions (n_ord, n_sum): (6,1)×35, (4,3)×57, (2,5)×28 | `cert_class.json`, `dual_cert.py dual` |
 | **Three hand proofs.** Boundary lemmas: axiom (iii) forces the first-elements and last-elements triple sums negative (any odd sizes, any pattern). Theorem: Conjecture 6 holds for identity patterns, ALL odd k, with the sharp constant. Proposition: certificate triple-sum count is odd with negatives outnumbering positives by one | `margin_law_notes.md` |
 | **Aligned-edge restriction.** Every one of the 120 optimal-cell certificates can be chosen using only aligned ordering edges; the same holds for a tested k=(7,7,7) cell. Reduces certificate existence to a finite combinatorial tiling problem | `cert_synth.py aligned_subsets_all`, `cert_aligned.json` |
-| **Refined certificate-existence conjecture verified up to k=15 and 200 random k=7 triples; parity theorem and sign-of-max rule proved; deterministic aligned-edge builder succeeds on all tested k=5, k=7, and resolved k=9 records.** 98.5% of inflation cells have aligned-edge-only certs; every failure is a suboptimal cell. All investigated global optima have aligned-edge-only certs. The number of dropped aligned edges in a minimal certificate is always even | `cert_test_higher.py`, `aligned_higher_results.json`, `no_ok_triples.json`, `sample_k7_200.json`, `sample_k7_100_with_ys.json`, `sample_k9_20.json`, `analyze_certs.py`, `cert_greedy.py` |
+| **Refined certificate-existence conjecture verified up to k=15 and 200 random k=7 triples; parity theorem and sign-of-max rule proved; fast two-stage MILP deterministic builder succeeds on all tested k=5, k=7, and resolved k=9 records.** 98.5% of inflation cells have aligned-edge-only certs; every failure is a suboptimal cell. All investigated global optima have aligned-edge-only certs. The number of dropped aligned edges in a minimal certificate is always even | `cert_test_higher.py`, `aligned_higher_results.json`, `no_ok_triples.json`, `sample_k7_200.json`, `sample_k7_100_with_ys.json`, `sample_k9_20.json`, `analyze_certs.py`, `cert_greedy.py`, `cert_deterministic.py` |
 
 Prior art for comparison: Wagner checked roughly 500 random `(7,7,7)` instances in 2016, and Tao called `(5,5,5)` "fairly straightforward" numerically. This repo settles `(5,5,5)` exhaustively and reaches k = 23 with exact cell suprema via arc inflation.
 
@@ -116,7 +116,8 @@ python3 -u conj6_search.py patterns 7
 ├── solve_unbalanced.py      # Global MILP for specific unbalanced triples
 ├── sample_k.py              # Random k=(k,k,k) spot-check sampler (stores ys)
 ├── analyze_certs.py         # Minimal aligned-edge drops + parity analysis
-├── cert_greedy.py           # Deterministic aligned-edge certificate builder
+├── cert_greedy.py           # Deterministic aligned-edge certificate builder (explicit even-drop search)
+├── cert_deterministic.py    # Fast two-stage MILP deterministic certificate builder
 │
 ├── squares_gallery.png      # 4-curve gallery with found squares
 ├── roughness_sweep.png      # Sweep panels + degeneration plot
@@ -145,7 +146,10 @@ python3 -u conj6_search.py patterns 7
 ├── sample_k9_20.json        # k=(9,9,9) 20-triple spot-check; 18/18 resolved have aligned certs
 ├── certs_k5_greedy.json     # deterministic aligned-edge certs for k=(5,5,5)
 ├── certs_k7_greedy.json     # deterministic aligned-edge certs for 100 k=(7,7,7) records
-└── certs_k9_greedy.json     # deterministic aligned-edge certs for 18 resolved k=(9,9,9) records
+├── certs_k9_greedy.json     # deterministic aligned-edge certs for 18 resolved k=(9,9,9) records
+├── certs_k5_det.json        # two-stage MILP deterministic certs for k=(5,5,5)
+├── certs_k7_det.json        # two-stage MILP deterministic certs for 100 k=(7,7,7) records
+└── certs_k9_det.json        # two-stage MILP deterministic certs for 18 resolved k=(9,9,9) records
 ```
 
 Every script is a plain CLI with `mode` as `argv[1]`. There is no package, no build step, and no config file. Run scripts from the repo root, since `seed_sweep.py`, `continuation.py`, and `inflate.py` import from their siblings.
@@ -344,6 +348,22 @@ tested k=(5,5,5), k=(7,7,7), and resolved k=(9,9,9) maximizing cells.
 
 ```bash
 python3 -u cert_greedy.py build sample_k7_100_with_ys.json certs_k7_greedy.json
+```
+
+### cert_deterministic.py
+
+Faster deterministic aligned-edge certificate builder. Uses a two-stage MILP:
+stage 1 minimizes the total number of rows, stage 2 breaks ties with distinct
+powers-of-two weights on the aligned-edge drop variables. Produces the same
+minimal-drop count as `cert_greedy.py` but is ~10x faster on k=(7,7,7) and
+~50x faster on k=(9,9,9).
+
+| Command | Description |
+|---|---|
+| `python3 -u cert_deterministic.py build SAMPLE.json OUT.json [ORDER]` | Build deterministic certs (`asc` or `desc` order). |
+
+```bash
+python3 -u cert_deterministic.py build sample_k7_100_with_ys.json certs_k7_det.json asc
 ```
 
 ## How the square finder works

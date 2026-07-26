@@ -15,3 +15,5 @@ __pycache__/cert_synth.cpython-314.pyc
 __pycache__/cert_test_higher.cpython-314.pyc
 __pycache__/solve_unbalanced.cpython-314.pyc
 __pycache__/extract_certs_k7.cpython-314.pyc
+__pycache__/cert_deterministic.cpython-314.pyc
+__pycache__/inflate.cpython-314.pyc

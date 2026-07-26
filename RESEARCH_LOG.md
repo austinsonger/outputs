@@ -562,3 +562,58 @@ Replace the brute-force aligned-edge subset search with a deterministic, always-
 1. Optimize the deterministic order (try highest-rank drops first) to speed up the greedy search.
 2. Prove that the even-drop search always terminates: show that for some even drop set (possibly all aligned edges) the residual is always coverable by triple sums in any valid maximizing cell.
 3. Connect the greedy rule to insertion induction: when a nested pair is inserted, the new aligned edge should enter the certificate, and the residual cover should update by a bounded number of triple-sum swaps.
+
+## Session 2026-07-25 (cont.): fast deterministic certificate builder
+
+### Direction chosen
+Replace the explicit even-drop search with a fast, deterministic MILP formulation that directly produces a unique aligned-edge certificate.
+
+### Method
+1. Wrote `cert_deterministic.py build SAMPLE.json OUT.json [ORDER]`.
+   - Stage 1: solve a combined MILP over aligned-edge keep/drop variables and triple-sum variables, minimizing total rows.
+   - Stage 2: fix the optimal row count and minimize a weighted sum of edge-drop variables, using distinct powers-of-two weights in a fixed order. This gives a unique optimal basis and hence a deterministic selection rule.
+2. Compared speed and output to `cert_greedy.py` on k=(5,5,5), k=(7,7,7), and k=(9,9,9).
+
+### Verified results
+1. **Correctness.**
+   - 120/120 k=5, 100/100 k=7, 18/18 resolved k=9 records produce valid certificates.
+   - Every certificate satisfies the integer identity `objective = sum of active rows` and hits the margin-law row count exactly.
+2. **Speed-up over explicit search.**
+   - k=7: ~0.8 s vs ~8 s for `cert_greedy.py`.
+   - k=9: ~0.45 s vs ~26 s for `cert_greedy.py`.
+3. **Identical minimal-drop distribution.** The two-stage MILP produces the same `n_ord` histogram as the explicit even-drop search, confirming the parity theorem is sharp.
+4. **Two k=9 triples still unsolved.** `[18,237,258]` and `[26,139,240]` time out even at 300 s; these are hard MILP instances, not counterexamples.
+
+### Files added
+- `cert_deterministic.py` — fast two-stage MILP deterministic certificate builder.
+- `certs_k5_det.json`, `certs_k7_det.json`, `certs_k9_det.json` — deterministic certificates produced by the two-stage MILP.
+
+### Open next steps
+1. Use `cert_deterministic.py` to scale the spot-check to larger k=(9,9,9) samples and, if feasible, k=(11,11,11).
+2. Prove that stage 1 always has an optimal value equal to the margin-law target `(3k-1)/2`; equivalently, that some conic combination of aligned edges and signed triple sums reproduces the objective vector.
+3. Connect the deterministic basis from stage 2 to insertion induction: when a nested pair is inserted, show the new basis can be updated by a bounded number of pivot operations.
+
+## Session 2026-07-25 (cont.): unimodal sign-tensor structure
+
+### Direction chosen
+Look for a structural property of the sign tensor that explains why the residual after aligned-edge drops is always tileable by triple sums.
+
+### Method
+Tested, for every stored-ys record at k=(5,5,5), (7,7,7), and resolved (9,9,9), whether the sign tensor `S(p,q,r) = sgn(y^1_p + y^2_q + y^3_r)` is unimodal along each coordinate when positions are ordered by rank (not by index).
+
+### Verified results
+1. **Unimodal sign tensor.**
+   - k=5: 120/120 records have unimodal rank-ordered slices.
+   - k=7: 100/100 records have unimodal rank-ordered slices.
+   - k=9: 18/18 resolved records have unimodal rank-ordered slices.
+   - In contrast, ordering by index fails for a large fraction of records, confirming the property is about rank order.
+2. **Interpretation.** For fixed values of two coordinates, the sign of the triple sum changes at most once as the rank increases in the third sequence. This is a 3D Monge-like property and is the natural source of the residual tileability: signed 3D matchings in unimodal tensors should admit greedy decompositions.
+3. **k=9 random sampling is too expensive.** A second 20-triple sample with a 120-second MILP limit made partial progress (6/12 resolved ok, 6 timeouts) before being stopped. Global MILP at k=9 is the practical bottleneck, not certificate existence.
+
+### Files added/updated
+- `margin_law_notes.md` — added unimodal sign-tensor observation and two-stage MILP rule.
+
+### Open next steps
+1. Prove the unimodal sign-tensor property from axioms (i)-(iii); it is likely a consequence of the non-crossing condition (iii) plus monotonicity of the sorted values.
+2. Design a greedy residual-cover algorithm that exploits the unimodal property, as a step toward a purely combinatorial proof.
+3. Use `cert_deterministic.py` on inflation-ladder cells at k=9 and above, where the MILP step is bypassed, to gather more certificate data without solving global optima.

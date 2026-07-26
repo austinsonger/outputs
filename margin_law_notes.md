@@ -131,6 +131,21 @@ negative, otherwise try dropping 2, 4, 6, ... aligned edges in a fixed order
 until the residual becomes an integer conic combination of signed triple
 sums. This rule succeeds on every tested maximizing cell (k=5, 7, and 9).
 
+A faster implementation uses a two-stage MILP: stage 1 minimizes the total
+number of active rows, and stage 2 breaks ties with distinct powers-of-two
+weights on the aligned-edge drop variables. The resulting drop set is unique
+and deterministic, and the builder is 10–50x faster than the explicit
+even-drop search while producing the same minimal drop counts.
+
+**Unimodal sign-tensor observation.** For every tested maximizing cell, the
+sign tensor `S(p,q,r) = sgn(y^1_p + y^2_q + y^3_r)` is unimodal along each
+coordinate when positions are ordered by *rank* (not by index): for fixed
+values of the other two coordinates, `S` takes one sign and then, at most
+once, switches to the other sign as the rank increases. This is verified for
+all k=5, k=7, and k=9 records. It is the 3D analogue of the Monge property
+and is the likely source of the residual tileability: a signed 3D matching in
+a unimodal tensor should admit a greedy decomposition.
+
 ## Observed, not yet proven
 
 - The margin law itself across all patterns: verified exhaustively at
